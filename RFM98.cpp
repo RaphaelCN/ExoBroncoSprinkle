@@ -37,9 +37,10 @@ void loraTransmit(DataPacket data)
   Serial.print("Sending packet: ");
   Serial.println(counter);
 
-  //Send LoRa packet to receiver
+  // Send LoRa packet to receiver
   LoRa.beginPacket();
-  LoRa.print("    ");
+  // Have to add buffer for some reason?
+  LoRa.println("    ");
   LoRa.print("Time Since Startup (H:M:S): ");
   LoRa.println(data.timestamp);
   LoRa.print("Temperature (C): ");
