@@ -41,14 +41,21 @@ void loraTransmit(DataPacket data)
   LoRa.beginPacket();
   // Have to add buffer for some reason?
   LoRa.println("    ");
-  LoRa.print("Time Since Startup (H:M:S): ");
+  // Time and Date
   LoRa.println(data.timestamp);
-  LoRa.print("Temperature (C): ");
-  LoRa.println(data.temperature);
-  LoRa.print("Humidity (%rH): ");
-  LoRa.println(data.humidity);
-  LoRa.print("Pressure (hPa): ");
-  LoRa.println(data.pressure);
+  LoRa.println(data.datestamp);
+
+  // Lat Long in degrees
+  LoRa.print("LLA: ");
+  LoRa.print(data.latitude); LoRa.print(", "); LoRa.println(data.longitude);
+
+  // Altitude (meters)
+  LoRa.print("Alt: "); LoRa.println(data.altitude);
+
+  // Temperature (C), Pressure (hPa)
+  LoRa.print("Tmp: "); LoRa.println(data.temperature);
+  LoRa.print("Ps: "); LoRa.println(data.pressure);
+
   LoRa.endPacket();
 
   counter++;
