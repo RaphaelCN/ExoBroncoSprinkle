@@ -28,4 +28,12 @@ _Setting up Arduino IDE_
   - First make sure you have the ESP32 boards installed on your IDE: https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/
   - When choosing a board to flash to, select "ESP32S3 Dev Module"
   - Ensure programming settings are like below:
-  - 
+
+![Tools Config](https://github.com/RaphaelCN/ExoBroncoSprinkle/blob/master/sprinkleConfig1.png)
+![Tools Config](https://github.com/RaphaelCN/ExoBroncoSprinkle/blob/master/sprinkleConfig2.png)
+
+_Adding Code_
+  - For new peripherals, make sure to separate them into header and source code files for organization (see above guidelines)
+  - Both have to be named the same, but with their respective file extensions
+  - Reference the MS8607.h and .cpp files for examples on how to structure code
+  - In SprinkleTest.ino, you would create a task for each new peripheral. Reference the radio and pressure sensor tasks in SprinkleTest.ino
