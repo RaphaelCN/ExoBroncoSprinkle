@@ -4,11 +4,9 @@
 #include <Wire.h>
 #include <Adafruit_MS8607.h>
 #include <Adafruit_Sensor.h>
+#include "DataPacket.h"
 
 void setupMS8607();
-void readMS8607();
-float getTemp();
-float getPressure();
-float getHumidity();
+void readMS8607(DataPacket* pData);
 
 #endif

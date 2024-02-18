@@ -3,83 +3,55 @@
 #define RX_PIN 44
 #define TX_PIN 43
 
-// Initialize Serial:
 HardwareSerial gpsSerial(2);
 Adafruit_GPS GPS(&gpsSerial);
 
-// Variable Values
-int hour;
-int minute;
-int second;
+#define GPSECHO  false
 
-int month;
-int day;
-int year;
-
-float latitude;
-float longitude;
-
-float speed;
-float angle;
-float altitude;
-
-uint32_t timer = millis();
-
-void setupGPS()
-{
+void setupGPS() {
+  Serial.begin(115200);
   gpsSerial.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
-  // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
+  Serial.println("Adafruit GPS library basic test!");
+  
   GPS.begin(9600);
-  // Set to send recommended minimum (RMC) and fix data (GGA) including altitude
+
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  // Set 1Hz update rate
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-  // Request updates on antenna status, comment out to keep quiet
   GPS.sendCommand(PGCMD_ANTENNA);
+
+  delay(1000);
+  gpsSerial.println(PMTK_Q_RELEASE);
 }
 
-void readGPS()
-{
+void readGPS(DataPacket* pData) {
   char c = GPS.read();
-  // Sentence received, check checksum
-  if (GPS.newNMEAreceived()) 
-  {
-    // Checksum passed, try parsing
-    if (!GPS.parse(GPS.lastNMEA()))   
-      return;  // If parsing fails, wait for new sentence
+  if (c && GPSECHO) {
+    Serial.write(c);
   }
 
-  if (millis() - timer > 2000)
-  {
-    timer = millis();
-  
-    hour = (int) GPS.hour;
-    minute = (int) GPS.minute;
-    second = (int) GPS.seconds;
-
-    month = (int) GPS.month;
-    day = (int) GPS.day;
-    year = (int) GPS.year;
-
-    if (GPS.fix) 
-    {
-      latitude = (float) GPS.latitudeDegrees;
-      longitude = (float) GPS.longitudeDegrees;
-      speed = (float) GPS.speed;
-      angle = (float) GPS.angle;
-      altitude = (float) GPS.altitude;
+  if (GPS.newNMEAreceived()) {
+    if (!GPS.parse(GPS.lastNMEA())) {
+      return;
     }
   }
-}
+/*
+  pData->hour = GPS.hour;
+  pData->minute = GPS.minute;
+  pData->second = GPS.seconds;
+  pData->millisecond = GPS.milliseconds;
+  pData->day = GPS.day;
+  pData->month = GPS.month;
+  pData->year = GPS.year;
+*/
+  //Serial.println("Reading GPS");
+  if (GPS.fix) {
+    //Serial.println("Getting Fix");
+    /*float latitude = (float) GPS.latitudeDegrees;
+    Serial.println(latitude, 8);
+    pData->latitude = latitude;*/
 
-int getHour() {return hour;}
-int getMinute() {return minute;}
-int getSecond() {return second;}
-int getMonth() {return month;}
-int getDay() {return day;}
-int getYear() {return year;}
-float getLat() {return latitude;}
-float getLong() {return longitude;}
-float getSpeed() {return speed;}
-float getAngle() {return angle;}
-float getAltitude() {return altitude;}
+    pData->latitude = GPS.latitudeDegrees;
+    pData->longitude = GPS.longitudeDegrees;
+    pData->altitude = GPS.altitude;
+  }
+}

@@ -32,7 +32,7 @@ void setupRFM98()
   Serial.print(F("Radio Init Success!"));
 }
 
-void loraTransmit(DataPacket data)
+void loraTransmit(DataPacket* pData)
 {
   Serial.print("Sending packet: ");
   Serial.println(counter);
@@ -42,19 +42,19 @@ void loraTransmit(DataPacket data)
   // Have to add buffer for some reason?
   LoRa.println("    ");
   // Time and Date
-  LoRa.println(data.timestamp);
-  LoRa.println(data.datestamp);
+  //LoRa.println(data.timestamp);
+  //LoRa.println(data.datestamp);
 
   // Lat Long in degrees
   LoRa.print("LLA: ");
-  LoRa.print(data.latitude); LoRa.print(", "); LoRa.println(data.longitude);
+  LoRa.print(pData->latitude); LoRa.print(", "); LoRa.println(pData->longitude);
 
   // Altitude (meters)
-  LoRa.print("Alt: "); LoRa.println(data.altitude);
+  LoRa.print("Alt: "); LoRa.println(pData->altitude);
 
   // Temperature (C), Pressure (hPa)
-  LoRa.print("Tmp: "); LoRa.println(data.temperature);
-  LoRa.print("Ps: "); LoRa.println(data.pressure);
+  LoRa.print("Tmp: "); LoRa.println(pData->temperature);
+  LoRa.print("Ps: "); LoRa.println(pData->pressure);
 
   LoRa.endPacket();
 

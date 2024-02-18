@@ -34,19 +34,10 @@ void setupMS8607()
   Serial.println("");
 }
 
-void readMS8607()
+void readMS8607(DataPacket* pData)
 {
   ms8607.getEvent(&pressure, &temp, &humidity);
-}
-
-float getTemp(){
-  return temp.temperature;
-}
-
-float getPressure(){
-  return pressure.pressure;
-}
-
-float getHumidity(){
-  return humidity.relative_humidity;
+  pData->temperature = temp.temperature;
+  pData->humidity = humidity.relative_humidity;
+  pData->pressure = pressure.pressure;
 }

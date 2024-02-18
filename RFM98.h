@@ -6,7 +6,7 @@
 #include "DataPacket.h"
 
 void setupRFM98();
-void loraTransmit(DataPacket data);
+void loraTransmit(DataPacket* data);
 void loraReceive();
 
 #endif

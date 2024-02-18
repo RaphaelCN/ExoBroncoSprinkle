@@ -20,16 +20,22 @@ TaskHandle_t task3Handle = NULL;
 // Task 1 - Pressure Sensor
 // Uses about 1692 words in stack
 void Task1(void *pvParameters) {
+  DataPacket* pData = (DataPacket*)pvParameters;
   for (;;) {
     // Attempt to take the mutex
     if (xSemaphoreTake(mutex, portMAX_DELAY)) {
       Serial.print("Pressure Sensor running on core: ");
       Serial.println(xPortGetCoreID());
 
-      readMS8607();
-      data.temperature = getTemp();
-      data.humidity = getHumidity();
-      data.pressure = getPressure();
+      readMS8607(pData);
+
+      Serial.print("Temp: "); Serial.println(pData->temperature);
+      Serial.print("Humidity: "); Serial.println(pData->humidity);
+      Serial.print("Pressure: "); Serial.println(pData->pressure);
+
+      // Leave in to observe as peripherals are added
+      Serial.print("# of words in stack currently used: ");
+      Serial.println(uxTaskGetStackHighWaterMark(NULL));
 
       xSemaphoreGive(mutex); // Release the mutex
       
@@ -41,17 +47,18 @@ void Task1(void *pvParameters) {
 // Task 2 - Radio Transmission
 // Currently using 1536 words in stack
 void Task2(void *pvParameters) {
+  DataPacket* pData = (DataPacket*)pvParameters;
   for (;;) {
     // Attempt to take the mutex
     if (xSemaphoreTake(mutex, portMAX_DELAY)) {
       Serial.print("Radio transmission running on core: ");
       Serial.println(xPortGetCoreID());
 
-      loraTransmit(data);
+      loraTransmit(pData);
 
       // Leave in to observe as peripherals are added
-      // Serial.print("# of words in stack currently used: ");
-      // Serial.println(uxTaskGetStackHighWaterMark(NULL));
+      Serial.print("# of words in stack currently used: ");
+      Serial.println(uxTaskGetStackHighWaterMark(NULL));
 
       xSemaphoreGive(mutex); // Release the mutex
       
@@ -62,39 +69,36 @@ void Task2(void *pvParameters) {
 
 // Task 3 - GPS Currently using 1792 words in stack
 void Task3(void *pvParameters) {
+  DataPacket* pData = (DataPacket*)pvParameters;
   for (;;) {
     // Attempt to take the mutex
     if (xSemaphoreTake(mutex, portMAX_DELAY)) {
       Serial.print("GPS running on core: ");
       Serial.println(xPortGetCoreID());
 
-      readGPS();
-      String time = String(getHour()) + ":" + String(getMinute()) + ":" + String(getSecond());
-      String date = String(getMonth()) + "/" + String(getDay()) + "/20" + String(getYear());
-      data.timestamp = time;
-      data.datestamp = date;
-      data.latitude = getLat();
-      data.longitude = getLong();
-      data.speed = getSpeed();
-      data.angle = getAngle();
-      data.altitude = getAltitude();
+      readGPS(pData);
+
+      Serial.print("Latitude: "); Serial.println(pData->latitude);
+      Serial.print("Longitude: "); Serial.println(pData->longitude);
+      Serial.print("Altitude: "); Serial.println(pData->altitude);
+
       // Leave in to observe as peripherals are added
-      // Serial.print("# of words in stack currently used: ");
-      // Serial.println(uxTaskGetStackHighWaterMark(NULL));
+      Serial.print("# of words in stack currently used: ");
+      Serial.println(uxTaskGetStackHighWaterMark(NULL));
 
       xSemaphoreGive(mutex); // Release the mutex
       
-      vTaskDelay(pdMS_TO_TICKS(2000)); // 1s Delay
+      vTaskDelay(pdMS_TO_TICKS(10)); // 1s Delay
     }
   }
 }
 
 void setup() {
   Serial.begin(115200);
-
+  Serial.println("Beginning Sprinkle");
   setupMS8607();
   setupRFM98();
-  //setupGPS();
+  setupGPS();
 
   mutex = xSemaphoreCreateMutex();
   
@@ -103,7 +107,7 @@ void setup() {
     Task1,         // Function to execute
     "Task1",       // Name of the task
     2000,          // Stack size (words)
-    NULL,          // Task parameters
+    &data,          // Task parameters
     1,             // Priority
     &task1Handle,  // Task handle
     0              // Core to run on (Core 0)
@@ -113,23 +117,23 @@ void setup() {
   xTaskCreatePinnedToCore(
     Task2,         // Function to execute
     "Task2",       // Name of the task
-    6000,          // Stack size (words)
-    NULL,          // Task parameters
+    10000,          // Stack size (words)
+    &data,          // Task parameters
     1,             // Priority
     &task2Handle,  // Task handle
     1              // Core to run on (Core 1)
   );
 
   // Create GPS (Task 3) on Core 0
-  /*xTaskCreatePinnedToCore(
+  xTaskCreatePinnedToCore(
     Task3,         // Function to execute
     "Task3",       // Name of the task
     6000,          // Stack size (words)
-    NULL,          // Task parameters
+    &data,          // Task parameters
     1,             // Priority
     &task3Handle,  // Task handle
     0              // Core to run on (Core 0)
-  );*/
+  );
 }
 
 void loop() {
